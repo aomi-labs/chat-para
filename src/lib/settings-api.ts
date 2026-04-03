@@ -1,7 +1,35 @@
 "use client";
 
 const SETTINGS_SESSION_KEY = "aomi_settings_session_id";
-const API_KEY_STORAGE_KEY = "aomi_api_key";
+const APP_API_KEY_STORAGE_KEY = "aomi_api_key";
+const PARA_DEV_API_KEY_STORAGE_KEY = "para_dev_api_key";
+
+function readTrimmedStorageValue(key: string): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const value = window.localStorage.getItem(key);
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function writeTrimmedStorageValue(key: string, value: string | null): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const trimmed = value?.trim();
+  if (trimmed) {
+    window.localStorage.setItem(key, trimmed);
+  } else {
+    window.localStorage.removeItem(key);
+  }
+}
 
 function generateSessionId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -30,30 +58,19 @@ export function getBackendUrl(): string {
 }
 
 export function getSettingsApiKey(): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const value = window.localStorage.getItem(API_KEY_STORAGE_KEY);
-  if (!value) {
-    return null;
-  }
-
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
+  return readTrimmedStorageValue(APP_API_KEY_STORAGE_KEY);
 }
 
 export function setSettingsApiKey(apiKey: string | null): void {
-  if (typeof window === "undefined") {
-    return;
-  }
+  writeTrimmedStorageValue(APP_API_KEY_STORAGE_KEY, apiKey);
+}
 
-  const value = apiKey?.trim();
-  if (value) {
-    window.localStorage.setItem(API_KEY_STORAGE_KEY, value);
-  } else {
-    window.localStorage.removeItem(API_KEY_STORAGE_KEY);
-  }
+export function getParaDevApiKey(): string | null {
+  return readTrimmedStorageValue(PARA_DEV_API_KEY_STORAGE_KEY);
+}
+
+export function setParaDevApiKey(apiKey: string | null): void {
+  writeTrimmedStorageValue(PARA_DEV_API_KEY_STORAGE_KEY, apiKey);
 }
 
 export async function settingsApiFetch<T>(

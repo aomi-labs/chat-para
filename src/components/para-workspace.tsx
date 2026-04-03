@@ -280,7 +280,7 @@ function DevApiKeyDialog({
     }
 
     setApiKey(trimmedKey);
-    setStatus("Para developer key saved for this tab.");
+    setStatus("Para developer key saved locally in this browser.");
     onOpenChange(false);
   };
 
@@ -290,8 +290,8 @@ function DevApiKeyDialog({
         <DialogHeader>
           <DialogTitle className="font-bauhaus text-2xl">Enter your Para API key</DialogTitle>
           <DialogDescription className="leading-6">
-            Dev mode uses a session-only key. It stays in memory for the current tab and is attached
-            to request state instead of visible chat messages.
+            Dev mode stores this key locally in your browser and attaches it to request state while
+            requests still flow through the agent instead of direct frontend tool calls.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
@@ -315,7 +315,7 @@ function DevApiKeyDialog({
             onClick={() => {
               clearApiKey();
               setDraft("");
-              setStatus("Developer key cleared from this tab.");
+              setStatus("Developer key cleared from local browser storage.");
             }}
           >
             Clear key
@@ -418,13 +418,13 @@ function DevPanel({ onManageKey }: { onManageKey: () => void }) {
     if (!hasApiKey) {
       return {
         title: "Developer key required",
-        body: "Apply a Para API key to unlock wallet creation and raw-signing actions in this tab.",
+        body: "Apply a Para API key to unlock agent-routed wallet creation, lookup, and raw-signing actions in dev mode.",
       };
     }
 
     return {
       title: "Developer access active",
-      body: "Create wallets, fetch status, and sign raw payloads. In dev mode, the saved Para key is attached to request state instead of visible prompt text.",
+      body: "Create wallets, fetch status, and sign raw payloads through the agent. In dev mode, the saved Para key is attached to request state instead of visible prompt text.",
     };
   }, [hasApiKey]);
 
@@ -574,7 +574,7 @@ function DevPanel({ onManageKey }: { onManageKey: () => void }) {
 
       <PanelSection
         title="Lookup + sign"
-        description="Use the same in-memory key to fetch wallet state or sign raw hex payloads."
+        description="Use the saved browser key while routing wallet lookup and raw-sign requests through the agent."
       >
         <div className="grid gap-4">
           <form className="grid gap-3" onSubmit={handleGetSubmit}>

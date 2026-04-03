@@ -46,8 +46,6 @@ import { resolveParaModeFromPath } from "@/lib/para-mode";
 import {
   buildParaConsumerRequestPrompt,
   buildParaDevRequestPrompt,
-  buildCreateWalletPrompt,
-  buildWalletSelectionPrompt,
 } from "@/lib/para-dev";
 import { requestParaDevKey } from "@/lib/para-auth";
 import { useParaDevSession } from "@/components/para-dev-session";
@@ -163,7 +161,7 @@ const ThreadWelcome: FC = () => {
             {devLocked
               ? "Enter a Para API key before sending create-wallet or signing requests."
               : mode === "dev"
-              ? "Create wallets, fetch status, and sign raw data through the para namespace. In dev mode, the saved Para key is included in every request context."
+              ? "Create wallets, fetch status, and sign raw data through the para namespace by routing requests through the agent. The saved Para key is included in request context instead of visible chat text."
               : "Use guided chat to inspect balances, transfer assets, and walk through swaps."}
           </m.div>
           {devLocked && (
@@ -212,76 +210,40 @@ const ThreadSuggestions: FC = () => {
   const { hasApiKey } = useParaDevSession();
   const devLocked = mode === "dev" && !hasApiKey;
 
-  if (devLocked) {
+  if (devLocked || mode === "dev") {
     return null;
   }
 
-  const suggestions = mode === "dev"
-    ? [
-        {
-          title: "Create an EVM wallet",
-          label: "and wait until it is ready",
-          action: buildCreateWalletPrompt({
-            walletType: "EVM",
-            userIdentifier: "Please enter your email",
-            userIdentifierType: "EMAIL",
-          }),
-        },
-        {
-          title: "Fetch wallet status",
-          label: "by choosing from your wallets first",
-          action: buildWalletSelectionPrompt({
-            action: "get wallet status",
-            toolName: "get_wallet",
-          }),
-        },
-        {
-          title: "Sign raw data",
-          label: "after picking a wallet",
-          action: buildWalletSelectionPrompt({
-            action: "sign raw data",
-            toolName: "sign_raw",
-          }),
-        },
-        {
-          title: "Explain the flow",
-          label: "from create to sign",
-          action: buildParaDevRequestPrompt({
-            request:
-              "Explain the full Para developer flow for creating a wallet, waiting until it is ready, and signing raw data.",
-          }),
-        },
-      ]
-    : [
-        {
-          title: "Show my balances",
-          label: "and suggest the next move",
-          action: buildParaConsumerRequestPrompt({
-            request: "Show my wallet balances.",
-          }),
-        },
-        {
-          title: "Send tokens",
-          label: "with a guided transfer flow",
-          action: buildParaConsumerRequestPrompt({
-            request: "Help me send tokens from my connected wallet and guide me through the transaction approval flow.",
-          }),
-        },
-        {
-          title: "Swap tokens",
-          label: "with route context",
-          action: buildParaConsumerRequestPrompt({
-            request: "Help me swap tokens from my connected wallet, explain the route, and guide me through approval.",
-          }),
-        },
-        {
-          title: "Check network context",
-          label: "before I act",
-          action: buildParaConsumerRequestPrompt({
-            request: "Summarize my connected wallet identity and current network context before I move tokens.",
-          }),
-        },
-      ];
+  const suggestions = [
+    {
+      title: "Show my balances",
+      label: "and suggest the next move",
+      action: buildParaConsumerRequestPrompt({
+        request: "Show my wallet balances.",
+      }),
+    },
+    {
+      title: "Send tokens",
+      label: "with a guided transfer flow",
+      action: buildParaConsumerRequestPrompt({
+        request: "Help me send tokens from my connected wallet and guide me through the transaction approval flow.",
+      }),
+    },
+    {
+      title: "Swap tokens",
+      label: "with route context",
+      action: buildParaConsumerRequestPrompt({
+        request: "Help me swap tokens from my connected wallet, explain the route, and guide me through approval.",
+      }),
+    },
+    {
+      title: "Check network context",
+      label: "before I act",
+      action: buildParaConsumerRequestPrompt({
+        request: "Summarize my connected wallet identity and current network context before I move tokens.",
+      }),
+    },
+  ];
 
   return (
     <div className="aui-thread-welcome-suggestions @md:grid-cols-2 grid w-full gap-3 pb-4">
@@ -330,7 +292,7 @@ const Composer: FC = () => {
         <div className="para-surface rounded-[28px] px-5 py-4">
           <div className="text-sm font-medium text-foreground">Para API key required</div>
           <div className="mt-1 text-sm text-muted-foreground">
-            Enter a Para API key to unlock developer chat actions. In dev mode, the saved key is included in every request context.
+            Enter a Para API key to unlock developer chat actions. In dev mode, the saved key is included in request context while requests still route through the agent.
           </div>
         </div>
       </div>

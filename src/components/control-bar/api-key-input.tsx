@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, type FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import { KeyIcon, CheckIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useControl, cn } from "@aomi-labs/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { setSettingsApiKey } from "@/lib/settings-api";
+import { getSettingsApiKey, setSettingsApiKey } from "@/lib/settings-api";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +33,18 @@ export const ApiKeyInput: FC<ApiKeyInputProps> = ({
   const [inputValue, setInputValue] = useState("");
   const [showKey, setShowKey] = useState(false);
 
-  const hasApiKey = Boolean(state.apiKey);
+  const storedApiKey = getSettingsApiKey();
+  const resolvedApiKey = state.apiKey?.trim() || storedApiKey || "";
+  const hasApiKey = Boolean(resolvedApiKey);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    setInputValue(resolvedApiKey);
+    setShowKey(false);
+  }, [open, resolvedApiKey]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -103,6 +114,7 @@ export const ApiKeyInput: FC<ApiKeyInputProps> = ({
                   }),
                 );
                 setInputValue("");
+                setOpen(false);
               }}
             >
               Clear

@@ -14,7 +14,7 @@ import {
   setParaToolApiKey,
   syncRuntimeAuthGlobals,
 } from "@/lib/request-api-keys";
-import { getSettingsApiKey, setSettingsApiKey } from "@/lib/settings-api";
+import { getParaDevApiKey, setParaDevApiKey } from "@/lib/settings-api";
 import type { ParaMode } from "@/lib/para-mode";
 import { withParaApiKeyInUserExt } from "@/lib/para-user-state";
 
@@ -54,11 +54,11 @@ export function ParaDevSessionProvider({
   }, [getAuthorizedNamespaces]);
 
   useEffect(() => {
-    setApiKeyState(resolveDevApiKey(getSettingsApiKey()));
+    setApiKeyState(resolveDevApiKey(getParaDevApiKey()));
   }, []);
 
   useEffect(() => {
-    setSettingsApiKey(apiKey);
+    setParaDevApiKey(apiKey);
     setParaToolApiKey(apiKey);
     syncRuntimeAuthGlobals();
   }, [apiKey]);

@@ -505,6 +505,8 @@ body {
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    box-shadow: none !important;
+    text-shadow: none !important;
   }
 
   :root {
