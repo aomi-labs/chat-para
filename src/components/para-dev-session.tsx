@@ -43,15 +43,15 @@ export function ParaDevSessionProvider({
   children: ReactNode;
   mode: ParaMode;
 }) {
-  const { state, getAuthorizedNamespaces } = useControl();
+  const { state, getAuthorizedApps } = useControl();
   const { user, setUser } = useUser();
   const [apiKey, setApiKeyState] = useState<string | null>(null);
-  const canAccessPara = state.authorizedNamespaces.includes("para");
+  const canAccessPara = state.authorizedApps.includes("para");
 
   useEffect(() => {
     syncRuntimeAuthGlobals();
-    void getAuthorizedNamespaces();
-  }, [getAuthorizedNamespaces]);
+    void getAuthorizedApps();
+  }, [getAuthorizedApps]);
 
   useEffect(() => {
     setApiKeyState(resolveDevApiKey(getParaDevApiKey()));
