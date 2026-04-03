@@ -13,6 +13,7 @@ import {
 import { PARA_DEV_KEY_EVENT } from "@/lib/para-auth";
 import { shouldPromptForDevApiKey } from "@/lib/para-mode";
 import { getBackendUrl } from "@/lib/settings-api";
+import { ParaModeContext } from "@/lib/para-mode";
 import {
   DevApiKeyDialog,
   ModeToolsDialog,
@@ -117,16 +118,20 @@ export function ParaDualWorkspace() {
   return (
     <>
       <div className={isDevActive ? "hidden" : "contents"}>
-        <AomiRuntimeProvider backendUrl={backendUrl}>
-          <ConsumerWorkspaceShell />
-        </AomiRuntimeProvider>
+        <ParaModeContext.Provider value="consumer">
+          <AomiRuntimeProvider backendUrl={backendUrl}>
+            <ConsumerWorkspaceShell />
+          </AomiRuntimeProvider>
+        </ParaModeContext.Provider>
       </div>
       <div className={isDevActive ? "contents" : "hidden"}>
-        <AomiRuntimeProvider backendUrl={backendUrl}>
-          <ParaDevSessionProvider mode="dev">
-            <DevWorkspaceShell />
-          </ParaDevSessionProvider>
-        </AomiRuntimeProvider>
+        <ParaModeContext.Provider value="dev">
+          <AomiRuntimeProvider backendUrl={backendUrl}>
+            <ParaDevSessionProvider mode="dev">
+              <DevWorkspaceShell />
+            </ParaDevSessionProvider>
+          </AomiRuntimeProvider>
+        </ParaModeContext.Provider>
       </div>
     </>
   );

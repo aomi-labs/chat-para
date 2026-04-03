@@ -1,4 +1,14 @@
+"use client";
+
+import { createContext, useContext } from "react";
+
 export type ParaMode = "consumer" | "dev";
+
+export const ParaModeContext = createContext<ParaMode>("consumer");
+
+export function useParaMode(): ParaMode {
+  return useContext(ParaModeContext);
+}
 
 export type ParaNamespace = "para-consumer" | "para";
 

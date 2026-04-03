@@ -26,7 +26,6 @@ import { useEffect } from "react";
 import { LazyMotion, MotionConfig, domAnimation } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
@@ -42,7 +41,7 @@ import { NetworkSelect } from "@/components/control-bar/network-select";
 import { WalletConnect } from "@/components/control-bar/wallet-connect";
 import { ParaMark } from "@/components/para-mark";
 import { useAssistantApi, useMessage } from "@assistant-ui/react";
-import { getNamespaceForMode, resolveParaModeFromPath } from "@/lib/para-mode";
+import { getNamespaceForMode, useParaMode } from "@/lib/para-mode";
 import {
   buildParaConsumerRequestPrompt,
   buildParaDevRequestPrompt,
@@ -115,8 +114,7 @@ const ThreadScrollToBottom: FC = () => {
 };
 
 const ThreadWelcome: FC = () => {
-  const pathname = usePathname();
-  const mode = resolveParaModeFromPath(pathname);
+  const mode = useParaMode();
   const { hasApiKey } = useParaDevSession();
   const devLocked = mode === "dev" && !hasApiKey;
 
@@ -205,8 +203,7 @@ const ThreadWelcome: FC = () => {
 };
 
 const ThreadSuggestions: FC = () => {
-  const pathname = usePathname();
-  const mode = resolveParaModeFromPath(pathname);
+  const mode = useParaMode();
   const { hasApiKey } = useParaDevSession();
   const devLocked = mode === "dev" && !hasApiKey;
 
@@ -281,8 +278,7 @@ const ThreadSuggestions: FC = () => {
 };
 
 const Composer: FC = () => {
-  const pathname = usePathname();
-  const mode = resolveParaModeFromPath(pathname);
+  const mode = useParaMode();
   const api = useAssistantApi();
   const { onNamespaceSelect } = useControl();
   const { apiKey, hasApiKey } = useParaDevSession();
@@ -301,11 +297,11 @@ const Composer: FC = () => {
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
     if (mode === "dev" && !apiKey) {
       return;
     }
-
-    event.preventDefault();
 
     if (api.thread().getState().isRunning) {
       return;
