@@ -4,7 +4,7 @@
   "private": true,
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "postinstall": "node scripts/patch-aomi-react.mjs",
+
     "link": "node ../scripts/link-aomi-widget.mjs && pnpm install",
     "unlink": "node ../scripts/link-aomi-widget.mjs --unlink && pnpm install",
     "dev": "next dev --turbopack",

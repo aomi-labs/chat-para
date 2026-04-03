@@ -28,7 +28,7 @@ export const ApiKeyInput: FC<ApiKeyInputProps> = ({
   title = "Aomi API Key",
   description = "Enter your API key to authenticate with Aomi services.",
 }) => {
-  const { state, setState } = useControl();
+  const { state, setApiKey } = useControl();
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [showKey, setShowKey] = useState(false);
@@ -106,7 +106,7 @@ export const ApiKeyInput: FC<ApiKeyInputProps> = ({
               variant="outline"
               className="rounded-full"
               onClick={() => {
-                setState({ apiKey: null });
+                setApiKey(null);
                 setSettingsApiKey(null);
                 window.dispatchEvent(
                   new CustomEvent("aomi:apps-updated", {
@@ -125,7 +125,7 @@ export const ApiKeyInput: FC<ApiKeyInputProps> = ({
             onClick={() => {
               if (inputValue.trim()) {
                 const apiKey = inputValue.trim();
-                setState({ apiKey });
+                setApiKey(apiKey);
                 setSettingsApiKey(apiKey);
                 window.dispatchEvent(
                   new CustomEvent("aomi:apps-updated", {

@@ -41,7 +41,7 @@ import { NetworkSelect } from "@/components/control-bar/network-select";
 import { WalletConnect } from "@/components/control-bar/wallet-connect";
 import { ParaMark } from "@/components/para-mark";
 import { useAssistantApi, useMessage } from "@assistant-ui/react";
-import { getNamespaceForMode, useParaMode } from "@/lib/para-mode";
+import { useParaMode } from "@/lib/para-mode";
 import {
   buildParaConsumerRequestPrompt,
   buildParaDevRequestPrompt,
@@ -280,7 +280,7 @@ const ThreadSuggestions: FC = () => {
 const Composer: FC = () => {
   const mode = useParaMode();
   const api = useAssistantApi();
-  const { onNamespaceSelect } = useControl();
+  const { onAppSelect } = useControl();
   const { apiKey, hasApiKey } = useParaDevSession();
 
   if (mode === "dev" && !hasApiKey) {
@@ -321,7 +321,7 @@ const Composer: FC = () => {
           request: text,
         });
 
-    onNamespaceSelect(getNamespaceForMode(mode));
+    onAppSelect(mode === "dev" ? "para" : "para-consumer");
     api.thread().append(prompt);
     void composer.reset();
   };

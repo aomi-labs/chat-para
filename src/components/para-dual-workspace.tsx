@@ -17,7 +17,7 @@ import { ParaModeContext } from "@/lib/para-mode";
 import {
   DevApiKeyDialog,
   ModeToolsDialog,
-  ParaNamespaceSync,
+  ParaAppSync,
   WorkspaceHeader,
   WorkspaceShell,
 } from "@/components/para-workspace";
@@ -30,7 +30,7 @@ function ConsumerWorkspaceShell() {
 
   return (
     <WorkspaceShell>
-      <ParaNamespaceSync mode="consumer" />
+      <ParaAppSync mode="consumer" />
       <div className="relative flex h-full flex-col">
         <WorkspaceHeader
           mode="consumer"
@@ -91,7 +91,7 @@ function DevWorkspaceShell() {
         onOpenChange={setModeToolsOpen}
         onManageKey={() => setDevKeyDialogOpen(true)}
       />
-      <ParaNamespaceSync mode="dev" />
+      <ParaAppSync mode="dev" />
       <div className="relative flex h-full flex-col">
         <WorkspaceHeader
           mode="dev"

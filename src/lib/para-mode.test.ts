@@ -17,20 +17,10 @@ test("resolveParaModeFromPath falls back to consumer for unknown paths", async (
   assert.equal(resolveParaModeFromPath("/settings"), "consumer");
 });
 
-test("getNamespaceForMode only exposes para-consumer and para namespaces", async () => {
+test("shouldPromptForDevApiKey returns true only for dev mode without key", async () => {
   const moduleUrl = new URL("./para-mode.ts", import.meta.url);
-  const {
-    getNamespaceForMode,
-    filterVisibleApps,
-    shouldPromptForDevApiKey,
-  } = await import(moduleUrl.href);
+  const { shouldPromptForDevApiKey } = await import(moduleUrl.href);
 
-  assert.equal(getNamespaceForMode("consumer"), "para-consumer");
-  assert.equal(getNamespaceForMode("dev"), "para");
-  assert.deepEqual(
-    filterVisibleApps(["default", "wallet", "para-consumer", "para", "social"]),
-    ["para-consumer", "para"],
-  );
   assert.equal(shouldPromptForDevApiKey("consumer", false), false);
   assert.equal(shouldPromptForDevApiKey("dev", true), false);
   assert.equal(shouldPromptForDevApiKey("dev", false), true);

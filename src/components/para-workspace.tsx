@@ -22,7 +22,6 @@ import { Input } from "@/components/ui/input";
 import { useAccountIdentity } from "@/lib/use-account-identity";
 import { ParaMark } from "@/components/para-mark";
 import {
-  getNamespaceForMode,
   type ParaMode,
 } from "@/lib/para-mode";
 import {
@@ -123,26 +122,26 @@ function ParaModeSwitcher({ mode }: { mode: ParaMode }) {
   );
 }
 
-export function ParaNamespaceSync({ mode }: { mode: ParaMode }) {
+export function ParaAppSync({ mode }: { mode: ParaMode }) {
   const { currentThreadId } = useAomiRuntime();
-  const { getCurrentThreadControl, onNamespaceSelect, isProcessing } = useControl();
-  const targetNamespace = getNamespaceForMode(mode);
+  const { getCurrentThreadApp, onAppSelect, isProcessing } = useControl();
+  const targetApp = mode === "dev" ? "para" : "para-consumer";
 
   useEffect(() => {
     if (isProcessing) {
       return;
     }
 
-    const currentNamespace = getCurrentThreadControl().namespace;
-    if (currentNamespace !== targetNamespace) {
-      onNamespaceSelect(targetNamespace);
+    const currentApp = getCurrentThreadApp();
+    if (currentApp !== targetApp) {
+      onAppSelect(targetApp);
     }
   }, [
     currentThreadId,
-    getCurrentThreadControl,
+    getCurrentThreadApp,
     isProcessing,
-    onNamespaceSelect,
-    targetNamespace,
+    onAppSelect,
+    targetApp,
   ]);
 
   return null;
@@ -150,12 +149,12 @@ export function ParaNamespaceSync({ mode }: { mode: ParaMode }) {
 
 function ConsumerPanel() {
   const api = useAssistantApi();
-  const { onNamespaceSelect, isProcessing } = useControl();
+  const { onAppSelect, isProcessing } = useControl();
   const identity = useAccountIdentity();
   const network = identity.chainId ? getChainInfo(identity.chainId) : undefined;
 
   const sendPrompt = (prompt: string) => {
-    onNamespaceSelect("para-consumer");
+    onAppSelect("para-consumer");
     api.thread().append(buildParaConsumerRequestPrompt({ request: prompt }));
   };
 
@@ -357,7 +356,7 @@ export function ModeToolsDialog({
 
 function DevPanel({ onManageKey }: { onManageKey: () => void }) {
   const api = useAssistantApi();
-  const { onNamespaceSelect, isProcessing } = useControl();
+  const { onAppSelect, isProcessing } = useControl();
   const { apiKey, hasApiKey, clearApiKey } = useParaDevSession();
   const [createInput, setCreateInput] = useState<CreateWalletInput>({
     walletType: "EVM",
@@ -378,7 +377,7 @@ function DevPanel({ onManageKey }: { onManageKey: () => void }) {
   const signValidation = signInput.data ? validateSignRawInput(signInput.data) : null;
 
   const submitPrompt = (prompt: string) => {
-    onNamespaceSelect("para");
+    onAppSelect("para");
     api.thread().append(prompt);
   };
 
