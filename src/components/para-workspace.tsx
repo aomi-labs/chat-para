@@ -681,6 +681,7 @@ function WorkspaceHeader({
 }
 
 function ParaWorkspaceShell({ mode }: { mode: ParaMode }) {
+  const { currentThreadId, threadViewKey } = useAomiRuntime();
   const { hasApiKey } = useParaDevSession();
   const [isDevKeyDialogOpen, setDevKeyDialogOpen] = useState(false);
   const [isModeToolsOpen, setModeToolsOpen] = useState(false);
@@ -731,7 +732,7 @@ function ParaWorkspaceShell({ mode }: { mode: ParaMode }) {
                   onOpenTools={() => setModeToolsOpen(true)}
                 />
                 <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                  <Thread />
+                  <Thread key={`${currentThreadId}-${threadViewKey}`} />
                 </div>
                 <NotificationToaster />
                 <WalletTxHandler />

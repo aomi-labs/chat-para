@@ -33,7 +33,7 @@ import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
 
-import { cn, useNotification, useThreadContext } from "@aomi-labs/react";
+import { cn, useControl, useNotification, useThreadContext } from "@aomi-labs/react";
 import { useComposerControl } from "@/components/aomi-frame";
 import { ModelSelect } from "@/components/control-bar/model-select";
 import { AppSelect } from "@/components/control-bar/app-select";
@@ -42,7 +42,7 @@ import { NetworkSelect } from "@/components/control-bar/network-select";
 import { WalletConnect } from "@/components/control-bar/wallet-connect";
 import { ParaMark } from "@/components/para-mark";
 import { useAssistantApi, useMessage } from "@assistant-ui/react";
-import { resolveParaModeFromPath } from "@/lib/para-mode";
+import { getNamespaceForMode, resolveParaModeFromPath } from "@/lib/para-mode";
 import {
   buildParaConsumerRequestPrompt,
   buildParaDevRequestPrompt,
@@ -284,6 +284,7 @@ const Composer: FC = () => {
   const pathname = usePathname();
   const mode = resolveParaModeFromPath(pathname);
   const api = useAssistantApi();
+  const { onNamespaceSelect } = useControl();
   const { apiKey, hasApiKey } = useParaDevSession();
 
   if (mode === "dev" && !hasApiKey) {
@@ -324,6 +325,7 @@ const Composer: FC = () => {
           request: text,
         });
 
+    onNamespaceSelect(getNamespaceForMode(mode));
     api.thread().append(prompt);
     void composer.reset();
   };
