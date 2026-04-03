@@ -113,11 +113,13 @@ const nextConfig: NextConfig = {
 
   turbopack: {
     resolveAlias: {
-      "@noble/hashes/_assert": nobleHashesAssertCompatPath,
-      "pino-pretty": emptyModulePath,
-      "@farcaster/miniapp-sdk": emptyModulePath,
-      "@farcaster/mini-app-solana": emptyModulePath,
-      "@farcaster/miniapp-wagmi-connector": emptyModulePath,
+      // Turbopack treats bare strings as module specifiers; use relative
+      // paths from the project root so it resolves them as files.
+      "@noble/hashes/_assert": "./noble-hashes-assert-compat.js",
+      "pino-pretty": "./empty-module.js",
+      "@farcaster/miniapp-sdk": "./empty-module.js",
+      "@farcaster/mini-app-solana": "./empty-module.js",
+      "@farcaster/miniapp-wagmi-connector": "./empty-module.js",
       ...(localWidgetPath ? { "@aomi-labs/widget-lib": localWidgetPath } : {}),
       ...(aomiReactPath ? { "@aomi-labs/react": aomiReactPath } : {}),
       ...sharedDeps,

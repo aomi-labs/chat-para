@@ -15,19 +15,6 @@ export type SignRawInput = {
   data: string;
 };
 
-export type ParaDevRequestPromptInput = {
-  request: string;
-};
-
-export type ParaConsumerRequestPromptInput = {
-  request: string;
-};
-
-export type WalletSelectionPromptInput = {
-  action: string;
-  toolName: string;
-};
-
 export const PARA_DOCS_LINK = "https://docs.getpara.com/v2/introduction/welcome";
 
 export function resolveDevApiKey(value: string | null | undefined): string | null {
@@ -48,15 +35,15 @@ export function validateSignRawInput(value: string): string | null {
   return null;
 }
 
-export function buildParaDevRequestPrompt(input: ParaDevRequestPromptInput): string {
+export function buildParaDevRequestPrompt(input: { request: string }): string {
   return input.request.trim();
 }
 
-export function buildParaConsumerRequestPrompt(input: ParaConsumerRequestPromptInput): string {
+export function buildParaConsumerRequestPrompt(input: { request: string }): string {
   return input.request.trim();
 }
 
-export function buildWalletSelectionPrompt(input: WalletSelectionPromptInput): string {
+export function buildWalletSelectionPrompt(input: { action: string; toolName: string }): string {
   return buildParaDevRequestPrompt({
     request: [
       `Show me the available wallets and ask me which wallet to use for ${input.action}.`,

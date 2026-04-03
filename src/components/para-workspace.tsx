@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   type FormEvent,
   useEffect,
@@ -9,17 +8,13 @@ import {
   useState,
 } from "react";
 import {
-  AomiRuntimeProvider,
   getChainInfo,
   useAomiRuntime,
   useControl,
   cn,
 } from "@aomi-labs/react";
 import { ThreadListPrimitive, useAssistantApi } from "@assistant-ui/react";
-import { Thread } from "@/components/assistant-ui/thread";
 import { ThreadListSidebar } from "@/components/assistant-ui/threadlist-sidebar";
-import { WalletTxHandler } from "@/components/wallet-tx-handler";
-import { NotificationToaster } from "@/components/ui/notification";
 import { WalletConnect } from "@/components/control-bar/wallet-connect";
 import { NetworkSelect } from "@/components/control-bar/network-select";
 import { Button } from "@/components/ui/button";
@@ -28,7 +23,6 @@ import { useAccountIdentity } from "@/lib/use-account-identity";
 import { ParaMark } from "@/components/para-mark";
 import {
   getNamespaceForMode,
-  shouldPromptForDevApiKey,
   type ParaMode,
 } from "@/lib/para-mode";
 import {
@@ -42,10 +36,6 @@ import {
   validateSignRawInput,
 } from "@/lib/para-dev";
 import {
-  PARA_DEV_KEY_EVENT,
-} from "@/lib/para-auth";
-import {
-  ParaDevSessionProvider,
   useParaDevSession,
 } from "@/components/para-dev-session";
 import {
@@ -61,8 +51,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8080";
 
 const CONSUMER_ACTIONS = [
   {
@@ -135,10 +123,9 @@ function ParaModeSwitcher({ mode }: { mode: ParaMode }) {
   );
 }
 
-function ParaNamespaceSync({ mode }: { mode: ParaMode }) {
+export function ParaNamespaceSync({ mode }: { mode: ParaMode }) {
   const { currentThreadId } = useAomiRuntime();
   const { getCurrentThreadControl, onNamespaceSelect, isProcessing } = useControl();
-  const pathname = usePathname();
   const targetNamespace = getNamespaceForMode(mode);
 
   useEffect(() => {
@@ -155,7 +142,6 @@ function ParaNamespaceSync({ mode }: { mode: ParaMode }) {
     getCurrentThreadControl,
     isProcessing,
     onNamespaceSelect,
-    pathname,
     targetNamespace,
   ]);
 
@@ -254,7 +240,7 @@ function ConsumerPanel() {
   );
 }
 
-function DevApiKeyDialog({
+export function DevApiKeyDialog({
   open,
   onOpenChange,
 }: {
@@ -336,7 +322,7 @@ function DevApiKeyDialog({
   );
 }
 
-function ModeToolsDialog({
+export function ModeToolsDialog({
   mode,
   open,
   onOpenChange,
@@ -634,13 +620,13 @@ function DevPanel({ onManageKey }: { onManageKey: () => void }) {
   );
 }
 
-function WorkspaceHeader({
+export function WorkspaceHeader({
   mode,
   onManageKey,
   onOpenTools,
 }: {
   mode: ParaMode;
-  onManageKey: () => void;
+  onManageKey?: () => void;
   onOpenTools: () => void;
 }) {
   const { currentThreadId, getThreadMetadata } = useAomiRuntime();
@@ -669,7 +655,7 @@ function WorkspaceHeader({
           {mode === "consumer" ? "Consumer tools" : "Dev tools"}
         </Button>
         {mode === "consumer" && <NetworkSelect />}
-        {mode === "dev" && (
+        {mode === "dev" && onManageKey && (
           <Button variant="outline" className="rounded-full" onClick={onManageKey}>
             API key
           </Button>
@@ -680,83 +666,19 @@ function WorkspaceHeader({
   );
 }
 
-function ParaWorkspaceShell({ mode }: { mode: ParaMode }) {
-  const { currentThreadId, threadViewKey } = useAomiRuntime();
-  const { hasApiKey } = useParaDevSession();
-  const [isDevKeyDialogOpen, setDevKeyDialogOpen] = useState(false);
-  const [isModeToolsOpen, setModeToolsOpen] = useState(false);
-
-  useEffect(() => {
-    if (shouldPromptForDevApiKey(mode, hasApiKey)) {
-      setDevKeyDialogOpen(true);
-      return;
-    }
-
-    if (mode !== "dev" || hasApiKey) {
-      setDevKeyDialogOpen(false);
-    }
-  }, [hasApiKey, mode]);
-
-  useEffect(() => {
-    const handleRequest = () => {
-      setDevKeyDialogOpen(true);
-    };
-
-    window.addEventListener(PARA_DEV_KEY_EVENT, handleRequest);
-    return () => {
-      window.removeEventListener(PARA_DEV_KEY_EVENT, handleRequest);
-    };
-  }, []);
-
+export function WorkspaceShell({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider className="h-full min-h-0!">
-      <>
-        <DevApiKeyDialog open={isDevKeyDialogOpen} onOpenChange={setDevKeyDialogOpen} />
-        <ModeToolsDialog
-          mode={mode}
-          open={isModeToolsOpen}
-          onOpenChange={setModeToolsOpen}
-          onManageKey={() => setDevKeyDialogOpen(true)}
-        />
-        <ParaNamespaceSync mode={mode} />
-        <div className="para-app-shell relative h-screen w-full overflow-hidden bg-background">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,78,0,0.16)_0%,rgba(255,78,0,0)_28%),radial-gradient(circle_at_bottom_right,rgba(22,21,20,0.08)_0%,rgba(22,21,20,0)_32%)]" />
-          <div className="pointer-events-none absolute inset-0 opacity-60 [background-image:radial-gradient(circle,rgba(142,133,127,0.14)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:linear-gradient(to_bottom,white,transparent_82%)]" />
-          <div className="relative flex h-full w-full overflow-hidden">
-            <ThreadListSidebar walletPosition={null} variant="sidebar" className="border-r border-border/60 bg-transparent" />
-            <SidebarInset className="min-h-0 overflow-hidden rounded-none bg-transparent shadow-none md:m-0">
-              <div className="relative flex h-full flex-col">
-                <WorkspaceHeader
-                  mode={mode}
-                  onManageKey={() => setDevKeyDialogOpen(true)}
-                  onOpenTools={() => setModeToolsOpen(true)}
-                />
-                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                  <Thread key={`${currentThreadId}-${threadViewKey}`} />
-                </div>
-                <NotificationToaster />
-                <WalletTxHandler />
-              </div>
-            </SidebarInset>
-          </div>
+      <div className="para-app-shell relative h-screen w-full overflow-hidden bg-background">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,78,0,0.16)_0%,rgba(255,78,0,0)_28%),radial-gradient(circle_at_bottom_right,rgba(22,21,20,0.08)_0%,rgba(22,21,20,0)_32%)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-60 [background-image:radial-gradient(circle,rgba(142,133,127,0.14)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:linear-gradient(to_bottom,white,transparent_82%)]" />
+        <div className="relative flex h-full w-full overflow-hidden">
+          <ThreadListSidebar walletPosition={null} variant="sidebar" className="border-r border-border/60 bg-transparent" />
+          <SidebarInset className="min-h-0 overflow-hidden rounded-none bg-transparent shadow-none md:m-0">
+            {children}
+          </SidebarInset>
         </div>
-      </>
+      </div>
     </SidebarProvider>
-  );
-}
-
-function ParaWorkspaceInner({ mode }: { mode: ParaMode }) {
-  return (
-    <ParaDevSessionProvider mode={mode}>
-      <ParaWorkspaceShell mode={mode} />
-    </ParaDevSessionProvider>
-  );
-}
-
-export function ParaWorkspace({ mode }: { mode: ParaMode }) {
-  return (
-    <AomiRuntimeProvider backendUrl={BACKEND_URL}>
-      <ParaWorkspaceInner mode={mode} />
-    </AomiRuntimeProvider>
   );
 }

@@ -103,10 +103,18 @@ export function ParaDevSessionProvider({
   );
 }
 
-export function useParaDevSession() {
+const NOOP_SET = (_k: string | null) => {};
+const NOOP_CLEAR = () => {};
+
+const DEFAULT_VALUE: ParaDevSessionValue = {
+  apiKey: null,
+  hasApiKey: false,
+  canAccessPara: false,
+  setApiKey: NOOP_SET,
+  clearApiKey: NOOP_CLEAR,
+};
+
+export function useParaDevSession(): ParaDevSessionValue {
   const context = useContext(ParaDevSessionContext);
-  if (!context) {
-    throw new Error("useParaDevSession must be used within ParaDevSessionProvider");
-  }
-  return context;
+  return context ?? DEFAULT_VALUE;
 }
