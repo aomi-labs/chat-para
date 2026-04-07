@@ -77,8 +77,10 @@ const nextConfig: NextConfig = {
       process.env.NEXT_PUBLIC_BACKEND_URL ||
       process.env.BACKEND_URL ||
       "http://localhost:8080",
-    NEXT_PUBLIC_AOMI_BACKEND_API_KEY:
-      process.env.NEXT_PUBLIC_AOMI_BACKEND_API_KEY || "",
+    NEXT_PUBLIC_AOMI_PARA_DEV_API_KEY:
+      process.env.NEXT_PUBLIC_AOMI_PARA_DEV_API_KEY || "",
+    NEXT_PUBLIC_AOMI_PARA_MAIN_API_KEY:
+      process.env.NEXT_PUBLIC_AOMI_PARA_MAIN_API_KEY || "",
     NEXT_PUBLIC_ANVIL_URL:
       process.env.NEXT_PUBLIC_ANVIL_URL ||
       process.env.ANVIL_URL ||
