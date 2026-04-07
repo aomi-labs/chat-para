@@ -13,7 +13,7 @@ import {
   useControl,
   cn,
 } from "@aomi-labs/react";
-import { ThreadListPrimitive, useAssistantApi } from "@assistant-ui/react";
+import { useAssistantApi } from "@assistant-ui/react";
 import { ThreadListSidebar } from "@/components/assistant-ui/threadlist-sidebar";
 import { WalletConnect } from "@/components/control-bar/wallet-connect";
 import { NetworkSelect } from "@/components/control-bar/network-select";
@@ -644,11 +644,6 @@ export function WorkspaceHeader({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <ThreadListPrimitive.New asChild>
-          <Button variant="outline" className="rounded-full">
-            New chat
-          </Button>
-        </ThreadListPrimitive.New>
         <ParaModeSwitcher mode={mode} />
         <Button variant="outline" className="rounded-full" onClick={onOpenTools}>
           {mode === "consumer" ? "Consumer tools" : "Dev tools"}
