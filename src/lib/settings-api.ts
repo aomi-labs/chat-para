@@ -54,7 +54,7 @@ export function getSettingsSessionId(): string {
 }
 
 export function getBackendUrl(): string {
-  return process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8080";
+  return "";
 }
 
 export function getSettingsApiKey(): string | null {

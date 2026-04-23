@@ -31,6 +31,11 @@ const envAllowedDevOrigins = (process.env.ALLOWED_DEV_ORIGINS || "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+const backendProxyTarget = (
+  process.env.BACKEND_URL ||
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  "https://api.aomi.dev"
+).replace(/\/+$/, "");
 
 const getProviderChainIds = () => {
   try {
@@ -77,6 +82,15 @@ const nextConfig = {
   allowedDevOrigins: [
     ...new Set([...defaultAllowedDevOrigins, ...envAllowedDevOrigins]),
   ],
+
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${backendProxyTarget}/api/:path*`,
+      },
+    ];
+  },
 
   env: {
     NEXT_PUBLIC_BACKEND_URL:
