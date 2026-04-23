@@ -3,9 +3,10 @@
 import { useEffect, useRef } from "react";
 import {
   useAomiRuntime,
+  toViemSignTypedDataArgs,
   type WalletRequest,
-  type WalletTxPayload,
   type WalletEip712Payload,
+  type WalletTxPayload,
 } from "@aomi-labs/react";
 import {
   useSendTransaction,
@@ -46,9 +47,9 @@ export function WalletTxHandler() {
   const processingRef = useRef(false);
 
   useEffect(() => {
-    if (!pendingWalletRequests) return;
+    if (!pendingWalletRequests?.length) return;
 
-    const next = pendingWalletRequests.find((request) => request.status === "pending");
+    const [next] = pendingWalletRequests;
     if (!next || processingRef.current) return;
 
     processingRef.current = true;
@@ -85,16 +86,15 @@ export function WalletTxHandler() {
           });
           return;
         }
-
         const payload = request.payload as WalletEip712Payload;
-        const typedData = payload.typed_data;
+        const typedData = toViemSignTypedDataArgs(payload);
 
         if (!typedData) {
           rejectWalletRequest(request.id, "Missing typed_data payload");
           return;
         }
 
-        const requestChainId = parseChainId(typedData.domain?.chainId);
+        const requestChainId = parseChainId(payload.typed_data?.domain?.chainId);
         if (
           requestChainId &&
           currentChainId &&

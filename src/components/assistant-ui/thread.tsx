@@ -260,13 +260,13 @@ const ThreadSuggestions: FC = () => {
           >
             <Button
               variant="ghost"
-              className="aui-thread-welcome-suggestion @md:flex-col h-auto w-full flex-1 flex-wrap items-start justify-start gap-1 rounded-[28px] border border-border/70 bg-white/70 px-5 py-4 text-left text-sm font-normal shadow-[0_12px_30px_rgba(22,21,20,0.05)] hover:border-primary/35 hover:bg-accent"
+              className="aui-thread-welcome-suggestion @md:flex-col h-auto w-full flex-1 flex-wrap items-start justify-start gap-1 rounded-[28px] border border-border/70 bg-white/70 px-5 py-4 text-left text-sm font-normal text-foreground shadow-[0_12px_30px_rgba(22,21,20,0.05)] hover:border-primary/35 hover:bg-accent dark:border-white/12 dark:bg-card/92 dark:text-foreground dark:hover:border-primary/35 dark:hover:bg-accent/85"
               aria-label={suggestedAction.action}
             >
-              <span className="aui-thread-welcome-suggestion-text-1 font-medium text-foreground">
+              <span className="aui-thread-welcome-suggestion-text-1 font-medium text-foreground dark:text-foreground">
                 {suggestedAction.title}
               </span>
-              <span className="aui-thread-welcome-suggestion-text-2 text-muted-foreground">
+              <span className="aui-thread-welcome-suggestion-text-2 text-muted-foreground dark:text-foreground/68">
                 {suggestedAction.label}
               </span>
             </Button>

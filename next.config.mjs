@@ -1,4 +1,3 @@
-import type { NextConfig } from "next";
 import { createRequire } from "module";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
@@ -8,8 +7,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const require = createRequire(import.meta.url);
 
-const emptyModulePath = resolve(__dirname, "empty-module.js");
-const nobleHashesAssertCompatPath = resolve(__dirname, "noble-hashes-assert-compat.js");
+const nobleHashesAssertCompatPath = resolve(
+  __dirname,
+  "noble-hashes-assert-compat.js",
+);
 const widgetRoot = process.env.AOMI_WIDGET_ROOT;
 const localWidgetPath =
   process.env.AOMI_WIDGET_PATH ||
@@ -21,9 +22,17 @@ const localWidgetSrcPath = widgetRoot
   ? resolve(widgetRoot, "apps/registry/src")
   : undefined;
 const shouldUseLocalWidget = Boolean(localWidgetPath || localReactPath);
+const defaultAllowedDevOrigins = [
+  "*.ngrok-free.dev",
+  "*.ngrok.app",
+  "*.ngrok.io",
+];
+const envAllowedDevOrigins = (process.env.ALLOWED_DEV_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-// Extract chain IDs from providers.toml so the frontend stays in sync with the backend
-const getProviderChainIds = (): string | undefined => {
+const getProviderChainIds = () => {
   try {
     const toml = readFileSync(resolve(__dirname, "../providers.toml"), "utf-8");
     const ids = [...toml.matchAll(/chain_id\s*=\s*(\d+)/g)].map((m) => m[1]);
@@ -33,12 +42,9 @@ const getProviderChainIds = (): string | undefined => {
   }
 };
 
-// Resolve @aomi-labs/react - only needed for local widget development
-// When using npm packages, let webpack resolve normally
 const aomiReactPath = localReactPath || undefined;
 
-// Find the widget src path - either local or from node_modules
-const getWidgetSrcPath = (): string | undefined => {
+const getWidgetSrcPath = () => {
   if (localWidgetSrcPath) return localWidgetSrcPath;
   try {
     const widgetMain = require.resolve("@aomi-labs/widget-lib");
@@ -49,14 +55,9 @@ const getWidgetSrcPath = (): string | undefined => {
 };
 const widgetSrcPath = getWidgetSrcPath();
 
-// Shared dependencies that must be deduplicated when using local widget.
-// Without these aliases, the local widget source resolves imports from its own
-// node_modules, creating duplicate React contexts / module instances.
-const sharedDeps: Record<string, string> = shouldUseLocalWidget
+const sharedDeps = shouldUseLocalWidget
   ? {
-      // NOTE: Do NOT alias react/react-dom here — Next.js patches React
-      // internally (e.g. React.cache for server components) and a raw alias
-      // would override that patched version, breaking SSR.
+      // Do not alias react/react-dom here; Next patches React internally.
       "@assistant-ui/react": resolve(
         __dirname,
         "node_modules/@assistant-ui/react",
@@ -71,7 +72,12 @@ const sharedDeps: Record<string, string> = shouldUseLocalWidget
     }
   : {};
 
-const nextConfig: NextConfig = {
+/** @type {import("next").NextConfig} */
+const nextConfig = {
+  allowedDevOrigins: [
+    ...new Set([...defaultAllowedDevOrigins, ...envAllowedDevOrigins]),
+  ],
+
   env: {
     NEXT_PUBLIC_BACKEND_URL:
       process.env.NEXT_PUBLIC_BACKEND_URL ||
@@ -97,26 +103,18 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
 
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-
   typescript: {
     ignoreBuildErrors: true,
   },
 
   transpilePackages: [
     "@getpara/react-sdk",
-    // widget-lib exports raw TypeScript, needs transpilation
     "@aomi-labs/widget-lib",
-    // react is pre-compiled, only transpile if using local source
     ...(localReactPath ? ["@aomi-labs/react"] : []),
   ],
 
   turbopack: {
     resolveAlias: {
-      // Turbopack treats bare strings as module specifiers; use relative
-      // paths from the project root so it resolves them as files.
       "@noble/hashes/_assert": "./noble-hashes-assert-compat.js",
       "pino-pretty": "./empty-module.js",
       "@farcaster/miniapp-sdk": "./empty-module.js",
@@ -142,67 +140,42 @@ const nextConfig: NextConfig = {
       ...sharedDeps,
     };
 
-    // Resolve @/ path aliases in @aomi-labs packages
     if (widgetSrcPath) {
       config.resolve.plugins = config.resolve.plugins ?? [];
       config.resolve.plugins.push({
-        apply(resolver: {
-          getHook: (name: string) => {
-            tapAsync: (
-              name: string,
-              callback: (
-                request: { request?: string; path?: string },
-                resolveContext: unknown,
-                callback: (err?: Error | null, result?: unknown) => void,
-              ) => void,
-            ) => void;
-          };
-          doResolve: (
-            hook: unknown,
-            request: unknown,
-            message: string,
-            resolveContext: unknown,
-            callback: (err?: Error | null, result?: unknown) => void,
-          ) => void;
-        }) {
+        apply(resolver) {
           const target = resolver.getHook("resolve");
-          resolver
-            .getHook("described-resolve")
-            .tapAsync(
-              "WidgetAliasPlugin",
-              (
-                request: { request?: string; path?: string },
-                resolveContext: unknown,
-                callback: (err?: Error | null, result?: unknown) => void,
-              ) => {
-                const innerRequest = request.request;
-                if (!innerRequest?.startsWith("@/")) {
-                  return callback();
-                }
+          resolver.getHook("described-resolve").tapAsync(
+            "WidgetAliasPlugin",
+            (request, resolveContext, callback) => {
+              const innerRequest = request.request;
+              if (!innerRequest?.startsWith("@/")) {
+                return callback();
+              }
 
-                const issuer = request.path ?? "";
-                const isFromWidget =
-                  issuer.includes("@aomi-labs/widget-lib") ||
-                  issuer.includes("@aomi-labs+widget-lib") ||
-                  (localWidgetSrcPath && issuer.includes(localWidgetSrcPath));
+              const issuer = request.path ?? "";
+              const isFromWidget =
+                issuer.includes("@aomi-labs/widget-lib") ||
+                issuer.includes("@aomi-labs+widget-lib") ||
+                (localWidgetSrcPath && issuer.includes(localWidgetSrcPath));
 
-                if (!isFromWidget) {
-                  return callback();
-                }
+              if (!isFromWidget) {
+                return callback();
+              }
 
-                const newRequest = innerRequest.replace(
-                  /^@\//,
-                  `${widgetSrcPath}/`,
-                );
-                resolver.doResolve(
-                  target,
-                  { ...request, request: newRequest },
-                  `Aliased @/ to widget src`,
-                  resolveContext,
-                  callback,
-                );
-              },
-            );
+              const newRequest = innerRequest.replace(
+                /^@\//,
+                `${widgetSrcPath}/`,
+              );
+              resolver.doResolve(
+                target,
+                { ...request, request: newRequest },
+                "Aliased @/ to widget src",
+                resolveContext,
+                callback,
+              );
+            },
+          );
         },
       });
     }
