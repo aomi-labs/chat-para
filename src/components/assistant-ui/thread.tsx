@@ -26,6 +26,7 @@ import { useEffect } from "react";
 import { LazyMotion, MotionConfig, domAnimation } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
@@ -313,7 +314,7 @@ const Composer: FC = () => {
       return;
     }
 
-    const prompt = mode === "dev"
+  const prompt = mode === "dev"
       ? buildParaDevRequestPrompt({
           request: text,
         })
@@ -321,7 +322,9 @@ const Composer: FC = () => {
           request: text,
         });
 
-    onAppSelect(mode === "dev" ? "para" : "para-consumer");
+    if (mode === "dev") {
+      onAppSelect("para");
+    }
     api.thread().append(prompt);
     void composer.reset();
   };
@@ -347,18 +350,23 @@ const Composer: FC = () => {
 };
 
 const ComposerAction: FC = () => {
+  const pathname = usePathname();
+  const mode = useParaMode();
   const composerControl = useComposerControl();
   const controlBarProps = composerControl.controlBarProps ?? {};
-  const hideModel = controlBarProps.hideModel ?? false;
-  const hideApp = (controlBarProps as { hideApp?: boolean }).hideApp ?? false;
-  const hideApiKey = controlBarProps.hideApiKey ?? false;
-  const hideWallet = controlBarProps.hideWallet ?? true;
-  const hideNetwork = controlBarProps.hideNetwork ?? false;
+  const isConsumerWorkspace = pathname.startsWith("/consumer");
+  const showInlineControls = composerControl.enabled || isConsumerWorkspace;
+  const hideModel = mode === "dev" ? true : controlBarProps.hideModel ?? false;
+  const hideApp = mode === "dev"
+    ? true
+    : (controlBarProps as { hideApp?: boolean }).hideApp ?? false;
+  const hideApiKey = mode === "dev" ? true : controlBarProps.hideApiKey ?? false;
+  const hideWallet = isConsumerWorkspace ? true : controlBarProps.hideWallet ?? true;
+  const hideNetwork = mode === "dev" ? true : controlBarProps.hideNetwork ?? false;
 
   return (
     <div className="aui-composer-action-wrapper relative mx-1 mb-2 mt-2 flex items-center">
-      {/* Inline controls: [Model ▾] [Agent ▾] [🔑] */}
-      {composerControl.enabled && (
+      {showInlineControls && (
         <div className="ml-2 flex items-center gap-2">
           {!hideNetwork && <NetworkSelect />}
           {!hideModel && <ModelSelect />}

@@ -30,7 +30,6 @@ function ConsumerWorkspaceShell() {
 
   return (
     <WorkspaceShell>
-      <ParaAppSync mode="consumer" />
       <div className="relative flex h-full flex-col">
         <WorkspaceHeader
           mode="consumer"

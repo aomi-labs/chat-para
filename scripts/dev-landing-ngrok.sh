@@ -8,6 +8,7 @@ PORT="${PORT:-3001}"
 HOST="${HOST:-127.0.0.1}"
 BACKEND_URL="${NEXT_PUBLIC_BACKEND_URL:-https://api.aomi.dev}"
 NGROK_API_URL="${NGROK_API_URL:-http://127.0.0.1:4040/api/tunnels}"
+HEALTHCHECK_PATH="${HEALTHCHECK_PATH:-/consumer}"
 
 APP_PID=""
 NGROK_PID=""
@@ -40,20 +41,20 @@ fi
 
 pushd "$PROJECT_ROOT" >/dev/null
 PORT="$PORT" HOSTNAME="$HOST" NEXT_PUBLIC_BACKEND_URL="$BACKEND_URL" BACKEND_URL="$BACKEND_URL" \
-  pnpm dev &
+  pnpm dev:webpack &
 APP_PID=$!
 popd >/dev/null
 
-echo "Starting app on http://${HOST}:${PORT}"
+echo "Starting app on http://${HOST}:${PORT}${HEALTHCHECK_PATH}"
 for _ in $(seq 1 30); do
-  if curl -sf "http://${HOST}:${PORT}" >/dev/null; then
+  if curl -sf "http://${HOST}:${PORT}${HEALTHCHECK_PATH}" >/dev/null; then
     break
   fi
   sleep 1
 done
 
-if ! curl -sf "http://${HOST}:${PORT}" >/dev/null; then
-  echo "App did not become ready on http://${HOST}:${PORT}"
+if ! curl -sf "http://${HOST}:${PORT}${HEALTHCHECK_PATH}" >/dev/null; then
+  echo "App did not become ready on http://${HOST}:${PORT}${HEALTHCHECK_PATH}"
   exit 1
 fi
 

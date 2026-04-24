@@ -23,6 +23,8 @@ const localWidgetSrcPath = widgetRoot
   : undefined;
 const shouldUseLocalWidget = Boolean(localWidgetPath || localReactPath);
 const defaultAllowedDevOrigins = [
+  "127.0.0.1",
+  "localhost",
   "*.ngrok-free.dev",
   "*.ngrok.app",
   "*.ngrok.io",

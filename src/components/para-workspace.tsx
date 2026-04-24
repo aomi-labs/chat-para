@@ -16,7 +16,6 @@ import {
 import { useAssistantApi } from "@assistant-ui/react";
 import { ThreadListSidebar } from "@/components/assistant-ui/threadlist-sidebar";
 import { WalletConnect } from "@/components/control-bar/wallet-connect";
-import { NetworkSelect } from "@/components/control-bar/network-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAccountIdentity } from "@/lib/use-account-identity";
@@ -125,10 +124,10 @@ function ParaModeSwitcher({ mode }: { mode: ParaMode }) {
 export function ParaAppSync({ mode }: { mode: ParaMode }) {
   const { currentThreadId } = useAomiRuntime();
   const { getCurrentThreadApp, onAppSelect, isProcessing } = useControl();
-  const targetApp = mode === "dev" ? "para" : "para-consumer";
+  const targetApp = mode === "dev" ? "para" : null;
 
   useEffect(() => {
-    if (isProcessing) {
+    if (!targetApp || isProcessing) {
       return;
     }
 
@@ -149,12 +148,11 @@ export function ParaAppSync({ mode }: { mode: ParaMode }) {
 
 function ConsumerPanel() {
   const api = useAssistantApi();
-  const { onAppSelect, isProcessing } = useControl();
+  const { isProcessing } = useControl();
   const identity = useAccountIdentity();
   const network = identity.chainId ? getChainInfo(identity.chainId) : undefined;
 
   const sendPrompt = (prompt: string) => {
-    onAppSelect("para-consumer");
     api.thread().append(buildParaConsumerRequestPrompt({ request: prompt }));
   };
 
@@ -169,15 +167,15 @@ function ConsumerPanel() {
             Move tokens with a calmer wallet flow.
           </h1>
           <p className="text-sm leading-6 text-muted-foreground">
-            Connect your wallet, keep the app locked to <code>para-consumer</code>,
-            and use guided chat actions instead of navigating the full Aomi multi-app surface.
+            Connect your wallet, switch networks or apps from the chat control bar,
+            and use guided prompts when you want a faster starting point.
           </p>
         </div>
       </div>
 
       <PanelSection
         title="Connected account"
-        description="Consumer mode reads the active Para or external wallet identity and keeps the network selector visible in chat."
+        description="Consumer mode reads the active Para or external wallet identity and keeps the normal Aomi control bar available in chat."
       >
         <div className="grid gap-3 text-sm">
           <div className="rounded-3xl border border-border/60 bg-white/70 p-4">
@@ -214,7 +212,7 @@ function ConsumerPanel() {
 
       <PanelSection
         title="Quick actions"
-        description="Each card sends a structured consumer prompt straight into chat."
+        description="Each card sends a starting prompt into chat without overriding the currently selected app."
       >
         <div className="space-y-3">
           {CONSUMER_ACTIONS.map((action) => (
@@ -648,7 +646,6 @@ export function WorkspaceHeader({
         <Button variant="outline" className="rounded-full" onClick={onOpenTools}>
           {mode === "consumer" ? "Consumer tools" : "Dev tools"}
         </Button>
-        {mode === "consumer" && <NetworkSelect />}
         {mode === "dev" && onManageKey && (
           <Button variant="outline" className="rounded-full" onClick={onManageKey}>
             API key
